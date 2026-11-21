@@ -334,7 +334,7 @@
 
         // label
         const mid = a0 + step / 2;
-        const fs = clamp(S * 0.9 / Math.max(6, n) * 2.2, 10, S * 0.052);
+        const fs = clamp((Math.PI * 2 / Math.max(4, n)) * S * 0.06, 10, n <= 4 ? S * 0.06 : S * 0.05);
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(mid);
@@ -479,7 +479,7 @@
       return { players, outcomes: outs, rows, rungs, n };
     },
     geom(d) {
-      const padX = 26, topY = 38, botY = this.h - 40;
+      const padX = 34, topY = 44, botY = this.h - 48;
       const colW = (this.w - padX * 2) / (d.n - 1);
       const colX = i => padX + i * colW;
       const rowGap = (botY - topY) / (d.rows + 1);
@@ -541,13 +541,16 @@
       ctx.textAlign = 'center';
       ctx.font = `900 ${fs}px Pretendard, system-ui, sans-serif`;
       for (let i = 0; i < d.n; i++) {
+        const cx0 = g.colX(i);
+        const room = 2 * Math.min(cx0, this.w - cx0) - 8;
+        const maxLabel = Math.max(40, Math.min(g.colW * 1.7, room));
         ctx.fillStyle = '#dfe6ff';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(ellipsisText(ctx, d.players[i], Math.max(46, g.colW * 1.5)), g.colX(i), g.topY - 8);
+        ctx.fillText(ellipsisText(ctx, d.players[i], maxLabel), cx0, g.topY - 9);
         const oc = d.outcomes[i];
         ctx.fillStyle = (oc && oc !== '꽝') ? '#b6ff3c' : 'rgba(150,160,200,.9)';
         ctx.textBaseline = 'top';
-        ctx.fillText(ellipsisText(ctx, oc, Math.max(46, g.colW * 1.5)), g.colX(i), g.botY + 8);
+        ctx.fillText(ellipsisText(ctx, oc, maxLabel), cx0, g.botY + 9);
       }
 
       // traced paths
