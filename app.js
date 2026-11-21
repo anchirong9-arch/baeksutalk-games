@@ -455,6 +455,7 @@
     data: null,
     anim: null,
     running: false,
+    winnerIdx: -1,
     layout() {
       const fit = fitCanvas(this.canvas);
       this.ctx = fit.ctx; this.w = fit.w; this.h = fit.h;
@@ -555,18 +556,21 @@
 
       // traced paths
       const pm = progressMap || {};
+      const done = d.players.length > 0 && d.outcomes &&
+        Object.keys(pm).length >= d.n && d.players.every((_, i) => pm[i] === 1);
       for (let i = 0; i < d.n; i++) {
         const prog = pm[i] === undefined ? (pm.all || 0) : pm[i];
         if (prog <= 0) continue;
         const { pts } = this.pathPoints(d, g, i);
         const color = PALETTE[i % PALETTE.length];
+        const dim = done && this.winnerIdx >= 0 && i !== this.winnerIdx;
         ctx.save();
+        ctx.globalAlpha = dim ? 0.32 : 1;
         ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = dim ? 2 : 3.2;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 12;
+        if (!dim) { ctx.shadowColor = color; ctx.shadowBlur = 12; }
         const head = this.strokePartial(pts, prog);
         ctx.restore();
         if (prog < 1 && head) {
@@ -619,6 +623,7 @@
         return;
       }
       this.running = true;
+      this.winnerIdx = -1;
       const btn = $('#btnLadder');
       btn.disabled = true;
       this.data = this.build();
@@ -644,10 +649,13 @@
       });
       const g = this.geom(d);
       const rowsOut = [];
+      const winners = [];
       d.players.forEach((name, i) => {
         const { endCol } = this.pathPoints(d, g, i);
         rowsOut.push([name, d.outcomes[endCol]]);
+        if (d.outcomes[endCol] && d.outcomes[endCol] !== '꽝') winners.push(i);
       });
+      this.winnerIdx = winners.length === 1 ? winners[0] : -1;
       this.draw(Object.fromEntries(d.players.map((_, i) => [i, 1])));
       setBetList(rowsOut);
       const winRow = rowsOut.find(r => r[1] && r[1] !== '꽝');
