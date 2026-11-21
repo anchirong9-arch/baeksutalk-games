@@ -456,9 +456,6 @@
     anim: null,
     running: false,
     layout() {
-      const n = getPlayers().length;
-      this.canvas.style.minWidth = n > 6 ? Math.min(n * 58, 780) + 'px' : '';
-      this.canvas.style.height = '';
       const fit = fitCanvas(this.canvas);
       this.ctx = fit.ctx; this.w = fit.w; this.h = fit.h;
     },
